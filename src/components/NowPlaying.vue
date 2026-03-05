@@ -115,8 +115,8 @@ const startSync = () => {
   }, 1000)
 }
 
-watch(currentVideo, (video) => {
-  if (video) {
+watch(currentVideo, (video, oldVideo) => {
+  if (video && video.id !== oldVideo?.id) {
     isSkipping.value = false
     currentTime.value = 0
     duration.value = 0
