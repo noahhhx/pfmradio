@@ -225,11 +225,6 @@ io.on('connection', (socket) => {
     playNext()
   })
 
-  socket.on('update-time', (time: number) => {
-    state.currentTime = time
-    socket.broadcast.emit('time-update', time)
-  })
-
   socket.on('update-playing', (playing: boolean) => {
     state.isPlaying = playing
     socket.broadcast.emit('playing-update', playing)

@@ -111,8 +111,6 @@ const startSync = () => {
       if (dur && dur !== duration.value) {
         duration.value = dur
       }
-      
-      socket.emit('update-time', time)
     }
   }, 1000)
 }
@@ -124,12 +122,6 @@ watch(currentVideo, (video) => {
     duration.value = 0
     loadVideo(video.id)
     startSync()
-  }
-})
-
-socket.on('time-update', (time: number) => {
-  if (playerRef.value?.seekTo && Math.abs(playerRef.value.getCurrentTime() - time) > 2) {
-    playerRef.value.seekTo(time, true)
   }
 })
 
