@@ -3,10 +3,16 @@ import { ref, watch, onMounted, computed } from 'vue'
 import { useRadio } from '../composables/useRadio'
 import { socket } from '../composables/useRadio'
 
-const { currentVideo, skip } = useRadio()
+const { currentVideo, playlists, currentPlaylistId, skip } = useRadio()
+
+const currentPlaylistName = computed(() => {
+  const playlist = playlists.value.find(p => p.id === currentPlaylistId.value)
+  return playlist ? playlist.name : 'Default Mix'
+})
 
 const playerRef = ref<any>(null)
 const isMuted = ref(true)
+const isSkipping = ref(false)
 const currentTime = ref(0)
 const duration = ref(0)
 
@@ -113,6 +119,7 @@ const startSync = () => {
 
 watch(currentVideo, (video) => {
   if (video) {
+    isSkipping.value = false
     currentTime.value = 0
     duration.value = 0
     loadVideo(video.id)
@@ -135,11 +142,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="bg-surface0 p-6">
-    <h2 class="text-xl font-bold mb-4 text-lavender">Now Playing</h2>
+  <div class="bg-surface0 p-6 relative">
+    <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-lavender"></div>
+    <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-lavender"></div>
+    <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-lavender"></div>
+    <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-lavender"></div>
+    <h2 class="text-xl font-bold mb-2 text-lavender">Now Playing - {{ currentPlaylistName }}</h2>
+    <h3 v-if="currentVideo" class="text-lg font-semibold mb-4 text-text">{{ currentVideo.title }}</h3>
     
     <div v-if="currentVideo" class="space-y-4">
-      <div id="yt-player" class="aspect-video bg-crust pointer-events-none"></div>
+      <div id="yt-player" class="aspect-video bg-crust pointer-events-none max-w-lg mx-auto"></div>
       
       <div class="space-y-2">
         <div class="w-full h-2 bg-surface1 overflow-hidden">
@@ -154,18 +166,18 @@ onMounted(() => {
         </div>
       </div>
       
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold truncate">{{ currentVideo.title }}</h3>
-        <div class="flex gap-0">
+      <div class="flex items-center justify-end">
+        <div class="flex gap-2">
           <button 
             @click="toggleMute"
-            class="bg-surface1 hover:bg-blue px-4 py-2 transition text-text"
+            class="bg-surface1 hover:bg-blue hover:scale-105 px-6 py-2 transition-all text-text font-semibold rounded shadow-lg border-2 border-surface2"
           >
             {{ isMuted ? 'Unmute' : 'Mute' }}
           </button>
           <button 
-            @click="skip"
-            class="bg-lavender hover:bg-mauve px-4 py-2 transition text-base"
+            @click="skip(); isSkipping = true"
+            :disabled="isSkipping"
+            class="bg-lavender hover:bg-mauve hover:scale-105 px-6 py-2 transition-all text-base font-semibold rounded shadow-lg border-2 border-mauve disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             Skip
           </button>

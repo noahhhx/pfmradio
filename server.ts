@@ -28,6 +28,7 @@ interface State {
   queue: Video[]
   currentVideo: Video | null
   playlists: Playlist[]
+  currentPlaylistId: string
   currentTime: number
   isPlaying: boolean
 }
@@ -65,6 +66,7 @@ const state: State = {
     name: 'Default Mix',
     videos: []
   }],
+  currentPlaylistId: 'default-mix',
   currentTime: 0,
   isPlaying: false
 }
@@ -93,9 +95,31 @@ const extractVideoId = (url: string): string | null => {
   ]
   for (const pattern of patterns) {
     const match = url.match(pattern)
-    if (match && match[1]) return match[1]
+    if (match) return match[1]
   }
   return null
+}
+
+const getVideoInfo = async (videoId: string): Promise<Video> => {
+  try {
+    const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+    console.log('Fetching video info for:', videoId)
+    const response = await fetch(url)
+    const data = await response.json()
+    console.log('Got title:', data.title)
+    return {
+      id: videoId,
+      title: data.title || 'Video',
+      thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+    }
+  } catch (error) {
+    console.error('Error fetching video info:', error)
+    return {
+      id: videoId,
+      title: 'Video',
+      thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+    }
+  }
 }
 
 const broadcastState = () => {
@@ -106,10 +130,10 @@ const playNext = () => {
   if (state.queue.length > 0) {
     state.currentVideo = state.queue.shift() || null
   } else {
-    const defaultMix = state.playlists.find(p => p.id === 'default-mix')
-    if (defaultMix && defaultMix.videos.length > 0) {
-      const randomIndex = Math.floor(Math.random() * defaultMix.videos.length)
-      state.currentVideo = defaultMix.videos[randomIndex] || null
+    const currentPlaylist = state.playlists.find(p => p.id === state.currentPlaylistId)
+    if (currentPlaylist && currentPlaylist.videos.length > 0) {
+      const randomIndex = Math.floor(Math.random() * currentPlaylist.videos.length)
+      state.currentVideo = currentPlaylist.videos[randomIndex] || null
     } else {
       state.currentVideo = null
     }
@@ -122,15 +146,11 @@ io.on('connection', (socket) => {
   
   socket.emit('state', state)
   
-  socket.on('add-to-queue', (url: string) => {
+  socket.on('add-to-queue', async (url: string) => {
     const videoId = extractVideoId(url)
     if (!videoId) return
     
-    const video: Video = {
-      id: videoId,
-      title: 'Video',
-      thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
-    }
+    const video = await getVideoInfo(videoId)
     
     state.queue.push(video)
     
@@ -150,15 +170,11 @@ io.on('connection', (socket) => {
     broadcastState()
   })
   
-  socket.on('add-to-mix', (url: string) => {
+  socket.on('add-to-mix', async (url: string) => {
     const videoId = extractVideoId(url)
     if (!videoId) return
     
-    const video: Video = {
-      id: videoId,
-      title: 'Video',
-      thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
-    }
+    const video = await getVideoInfo(videoId)
     
     const defaultMix = state.playlists.find(p => p.id === 'default-mix')
     if (defaultMix) {
@@ -174,15 +190,11 @@ io.on('connection', (socket) => {
     }
   })
   
-  socket.on('add-playlist', ({ name, url }: { name: string, url: string }) => {
+  socket.on('add-playlist', async ({ name, url }: { name: string, url: string }) => {
     const videoId = extractVideoId(url)
     if (!videoId) return
     
-    const video: Video = {
-      id: videoId,
-      title: 'Video',
-      thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
-    }
+    const video = await getVideoInfo(videoId)
     
     const existing = state.playlists.find(p => p.name === name)
     if (existing) {
@@ -197,6 +209,20 @@ io.on('connection', (socket) => {
     
     saveState()
     broadcastState()
+  })
+
+  socket.on('remove-from-playlist', ({ playlistId, videoIndex }: { playlistId: string, videoIndex: number }) => {
+    const playlist = state.playlists.find(p => p.id === playlistId)
+    if (playlist) {
+      playlist.videos.splice(videoIndex, 1)
+      saveState()
+      broadcastState()
+    }
+  })
+
+  socket.on('switch-playlist', (playlistId: string) => {
+    state.currentPlaylistId = playlistId
+    playNext()
   })
 
   socket.on('update-time', (time: number) => {
@@ -215,6 +241,27 @@ io.on('connection', (socket) => {
 })
 
 const PORT = process.env.PORT || 3001
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`)
+  
+  // Update existing videos with real titles
+  let updated = false
+  for (const playlist of state.playlists) {
+    for (const video of playlist.videos) {
+      if (video.title === 'Video') {
+        console.log(`Updating title for video ${video.id}`)
+        const info = await getVideoInfo(video.id)
+        video.title = info.title
+        updated = true
+      }
+    }
+  }
+  if (updated) {
+    saveState()
+    console.log('Updated video titles')
+  }
+  
+  if (!state.currentVideo) {
+    playNext()
+  }
 })

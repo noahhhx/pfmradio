@@ -7,11 +7,13 @@ export const socket = io()
 const queue = ref<Video[]>([])
 const currentVideo = ref<Video | null>(null)
 const playlists = ref<Playlist[]>([])
+const currentPlaylistId = ref<string>('default-mix')
 
-socket.on('state', (state: { queue: Video[], currentVideo: Video | null, playlists: Playlist[] }) => {
+socket.on('state', (state: { queue: Video[], currentVideo: Video | null, playlists: Playlist[], currentPlaylistId: string }) => {
   queue.value = state.queue
   currentVideo.value = state.currentVideo
   playlists.value = state.playlists
+  currentPlaylistId.value = state.currentPlaylistId
 })
 
 export function useRadio() {
@@ -35,14 +37,20 @@ export function useRadio() {
     socket.emit('add-playlist', { name, url })
   }
 
+  const switchPlaylist = (playlistId: string) => {
+    socket.emit('switch-playlist', playlistId)
+  }
+
   return {
     queue,
     currentVideo,
     playlists,
+    currentPlaylistId,
     addToQueue,
     skip,
     removeFromQueue,
     addPlaylist,
-    addToMix
+    addToMix,
+    switchPlaylist
   }
 }
