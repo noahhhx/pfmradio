@@ -1,0 +1,11 @@
+services:
+  pfmradio:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - pfmradio-data:/data
+    restart: unless-stopped
+
+volumes:
+  pfmradio-data:
