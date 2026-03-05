@@ -5,10 +5,10 @@ import MixPlaylist from './components/MixPlaylist.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-900 text-white">
-    <header class="bg-gray-800 border-b border-gray-700">
+  <div class="min-h-screen bg-base text-text">
+    <header class="bg-mantle border-b border-surface0">
       <div class="max-w-6xl mx-auto px-4 py-4">
-        <h1 class="text-2xl font-bold text-purple-400">PFM Radio</h1>
+        <h1 class="text-2xl font-bold text-lavender">PFM Radio</h1>
       </div>
     </header>
     

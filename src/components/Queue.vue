@@ -15,8 +15,8 @@ const handleAdd = () => {
 </script>
 
 <template>
-  <div class="bg-gray-800 rounded-lg p-6">
-    <h2 class="text-xl font-bold mb-4">Queue</h2>
+  <div class="bg-surface0 p-6">
+    <h2 class="text-xl font-bold mb-4 text-lavender">Queue</h2>
     
     <div class="flex gap-2 mb-4">
       <input 
@@ -24,11 +24,11 @@ const handleAdd = () => {
         @keyup.enter="handleAdd"
         type="text"
         placeholder="YouTube URL"
-        class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+        class="flex-1 bg-mantle border border-surface1 px-4 py-2 focus:outline-none focus:border-lavender text-text"
       />
       <button 
         @click="handleAdd"
-        class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition"
+        class="bg-lavender hover:bg-mauve px-4 py-2 transition text-base"
       >
         Add
       </button>
@@ -38,24 +38,24 @@ const handleAdd = () => {
       <div 
         v-for="(video, index) in queue" 
         :key="video.id + index"
-        class="flex items-center gap-3 bg-gray-700 rounded-lg p-2"
+        class="flex items-center gap-3 bg-mantle p-2"
       >
         <img 
           :src="video.thumbnail" 
           :alt="video.title"
-          class="w-24 h-14 object-cover rounded"
+          class="w-24 h-14 object-cover"
         />
         <span class="flex-1 truncate">{{ video.title }}</span>
         <button 
           @click="removeFromQueue(index)"
-          class="text-gray-400 hover:text-red-400 p-2"
+          class="text-subtext hover:text-red p-2"
         >
           ✕
         </button>
       </div>
     </div>
     
-    <div v-else class="text-gray-400 text-center py-4">
+    <div v-else class="text-subtext text-center py-4">
       Queue is empty
     </div>
   </div>

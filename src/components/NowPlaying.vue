@@ -135,20 +135,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="bg-gray-800 rounded-lg p-6">
-    <h2 class="text-xl font-bold mb-4">Now Playing</h2>
+  <div class="bg-surface0 p-6">
+    <h2 class="text-xl font-bold mb-4 text-lavender">Now Playing</h2>
     
     <div v-if="currentVideo" class="space-y-4">
-      <div id="yt-player" class="aspect-video rounded-lg overflow-hidden bg-black pointer-events-none"></div>
+      <div id="yt-player" class="aspect-video bg-crust pointer-events-none"></div>
       
       <div class="space-y-2">
-        <div class="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+        <div class="w-full h-2 bg-surface1 overflow-hidden">
           <div 
-            class="h-full bg-purple-500 transition-all duration-1000"
+            class="h-full bg-lavender transition-all duration-1000"
             :style="{ width: `${progress}%` }"
           ></div>
         </div>
-        <div class="flex justify-between text-sm text-gray-400">
+        <div class="flex justify-between text-sm text-subtext">
           <span>{{ formatTime(currentTime) }}</span>
           <span>{{ formatTime(duration) }}</span>
         </div>
@@ -156,16 +156,16 @@ onMounted(() => {
       
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-semibold truncate">{{ currentVideo.title }}</h3>
-        <div class="flex gap-2">
+        <div class="flex gap-0">
           <button 
             @click="toggleMute"
-            class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition"
+            class="bg-surface1 hover:bg-blue px-4 py-2 transition text-text"
           >
             {{ isMuted ? 'Unmute' : 'Mute' }}
           </button>
           <button 
             @click="skip"
-            class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition"
+            class="bg-lavender hover:bg-mauve px-4 py-2 transition text-base"
           >
             Skip
           </button>
@@ -173,7 +173,7 @@ onMounted(() => {
       </div>
     </div>
     
-    <div v-else class="text-gray-400 text-center py-8">
+    <div v-else class="text-subtext text-center py-8">
       <p>No video playing</p>
       <p class="text-sm mt-2">Add a video to the queue or submit to the mix</p>
     </div>
